@@ -1,0 +1,39 @@
+steps:
+  # Install dependencies
+  - name: python
+    entrypoint: pip
+    args: ["install", "-r", "requirements.txt", "--user"]
+
+  # Generate the pipeline
+  - name: python
+    entrypoint: python
+    args: ["fraud-pipeline.py"]
+
+  # Copy to GCS
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'gsutil'
+    args:
+      [
+        "cp",
+        "automl_fraud_pipeline.json",
+        "${_ARTEFACT_BUCKET}/pipelines/${_ARTEFACT_VERSION}/automl_fraud_pipeline.json",
+      ]
+    env:
+      - "_ARTEFACT_BUCKET=${_ARTEFACT_BUCKET}"
+      - "_ARTEFACT_VERSION=${_ARTEFACT_VERSION}"
+
+  # Run the pipeline, including dataset management, training and predictions
+  # This needs to be moved into a Composer DAG and triggered there
+  - name: python
+    entrypoint: python
+    args:
+      [
+        "run.py",
+        "--project", "${PROJECT_ID}",
+        "--pipeline-root", "${_ARTEFACT_BUCKET}",
+        "--version", "${_ARTEFACT_VERSION}",
+        "--prediction-dataset", "${_BQ_DATASET}",
+        "--prediction-table", "${_BQ_TABLE}",
+        "--training-data", "bq://bigquery-public-data.ml_datasets.ulb_fraud_detection",
+        "--service-account", "${_SERVICE_ACCOUNT}",
+      ]
