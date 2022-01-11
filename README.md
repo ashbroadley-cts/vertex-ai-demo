@@ -21,11 +21,11 @@ Keep the BQ Dataset & Table name and Storage Bucket name handy for later.
 
 ### Create Prediction Data
 
-1. In the BQ SQL Editor run the following query: 
-    ```
+1. In the BQ SQL Editor run the following query:
+```
 select * except (Class) from `bigquery-public-data.ml_datasets.ulb_fraud_detection` order by V2 desc limit 100
-    ```
-1. Save the results to a new table in the previously created BQ Dataset
+```
+2. Save the results to a new table in the previously created BQ Dataset
 
 ### Generate the Pipeline
 
